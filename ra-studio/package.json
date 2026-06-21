@@ -1,0 +1,24 @@
+{
+  "name": "ra-studio",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm:dev:web\" \"npm:dev:api\"",
+    "dev:web": "npm --workspace @ra-studio/web dev",
+    "dev:api": "npm --workspace @ra-studio/api dev",
+    "build": "npm --workspace @ra-studio/web build && npm --workspace @ra-studio/api build",
+    "start": "npm --workspace @ra-studio/web start & npm --workspace @ra-studio/api start",
+    "lint": "eslint . --ext .ts,.tsx,.js",
+    "prisma:generate": "npm --workspace @ra-studio/api run prisma:generate",
+    "docker:build": "docker build -t ra-studio:latest ."
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "eslint": "^8.50.0",
+    "typescript": "^5.6.0"
+  }
+}

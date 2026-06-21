@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String    @id @default(cuid())
+  email      String    @unique
+  password   String
+  name       String?
+  role       UserRole  @default(USER)
+  projects   Project[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Project {
+  id         String   @id @default(cuid())
+  name       String
+  slug       String   @unique
+  description String?
+  owner      User     @relation(fields: [ownerId], references: [id])
+  ownerId    String
+  files      File[]   @relation("project_files")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  cpuLimit   Int?     @default(500)
+  memLimit   Int?     @default(512)
+  isPublic   Boolean  @default(false)
+  status     String   @default("idle")
+}
+
+model File {
+  id         String   @id @default(cuid())
+  path       String
+  content    String   @db.Text
+  project    Project  @relation(fields: [projectId], references: [id], name: "project_files")
+  projectId  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Log {
+  id        String   @id @default(cuid())
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId String
+  type      String
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+model Template {
+  id        String   @id @default(cuid())
+  name      String
+  description String?
+  files     File[]   @relation("template_files")
+  createdAt DateTime @default(now())
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}

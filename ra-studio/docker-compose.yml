@@ -1,0 +1,62 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: rastudio
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api
+    env_file:
+      - .env
+    depends_on:
+      - db
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./ra-studio/apps/api:/usr/src/api
+      - /usr/src/api/node_modules
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    volumes:
+      - ./ra-studio/apps/web:/usr/src/web
+      - /usr/src/web/node_modules
+
+  runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    env_file:
+      - .env
+    # Mount Docker socket so runner can control the host Docker daemon.
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - api
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
